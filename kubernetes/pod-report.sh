@@ -37,7 +37,7 @@ function checkPodStatus () {
 }
 
 function printPodStatus () {
-	echo -e "\nPOD STATUS RESUME IN THE NAMESPACE -> $1:\n"
+	echo -e "\nPOD STATUS RESUME:\n"
 	echo "+------------------+---------------+---------------+------------------+------------------+---------------+"
 	printf  "|$green%-18s$nc|$red%-15s$nc|$red%-15s$nc|$red%-18s$nc|$red%-18s$nc|$red%-15s$nc|\n" "Running/Completed" "Evicted" "Error" "CrashLoopBackOff" "ImagePullBackOff" "Unknown"
 	echo "+------------------+---------------+---------------+------------------+------------------+---------------+"
