@@ -1,4 +1,4 @@
-#!/bin/bash 
+#!/bin/bash
 
 # colors
 red="\033[1;31m"
@@ -11,12 +11,17 @@ function checkPodStatus () {
 	listPods=$(kubectl -n $1 get po | awk 'NR>1{print $1}')
 
 	for i in ${listPods[@]}
-	do 
-	echo -ne "$i ... " 
+	do
+	echo -ne "$i ... "
 	status=$(kubectl -n $1 get po $i | grep $i | awk '{print $3}')
+	restarts=$(kubectl -n $1 get po $i | grep $i | awk '{print $4}')
 		if [[ $status =~ ^Running$|^Completed$  ]] ; then
 			echo -e "${green}OK Running/Completed State!${nc}"
 			let running=running+1
+			if [[ $restarts -gt 0  ]] ; then
+				echo -e "${yellow}The previous pod was restarted -> $restarts!${nc}"
+				let podrestarts=podrestarts+1
+			fi
 		elif [[ $status =~ ^Evicted$  ]] ; then
 			echo -e "${red}FAILED!! Evicted State!${nc}"
 			let evicted=evicted+1
@@ -38,11 +43,11 @@ function checkPodStatus () {
 
 function printPodStatus () {
 	echo -e "\nPOD STATUS RESUME:\n"
-	echo "+------------------+---------------+---------------+------------------+------------------+---------------+"
-	printf  "|$green%-18s$nc|$red%-15s$nc|$red%-15s$nc|$red%-18s$nc|$red%-18s$nc|$red%-15s$nc|\n" "Running/Completed" "Evicted" "Error" "CrashLoopBackOff" "ImagePullBackOff" "Unknown"
-	echo "+------------------+---------------+---------------+------------------+------------------+---------------+"
-	printf  "|%-18s|%-15s|%-15s|%-18s|%-18s|%-15s|\n" "$running" "$evicted" "$error" "$crashloopbackoff" "$imagepullbackoff" "$unknown"
-	echo "+------------------+---------------+---------------+------------------+------------------+---------------+"
+	echo "+------------------+---------------+---------------+------------------+------------------+---------------+---------------+"
+	printf  "|$green%-18s$nc|$red%-15s$nc|$red%-15s$nc|$red%-18s$nc|$red%-18s$nc|$red%-15s$nc|$red%-15s$nc|\n" "Running/Completed" "Evicted" "Error" "CrashLoopBackOff" "ImagePullBackOff" "PodRestarts" "Unknown"
+	echo "+------------------+---------------+---------------+------------------+------------------+---------------+---------------+"
+	printf  "|%-18s|%-15s|%-15s|%-18s|%-18s|%-15s|%-15s|\n" "$running" "$evicted" "$error" "$crashloopbackoff" "$imagepullbackoff" "$podrestarts" "$unknown"
+	echo "+------------------+---------------+---------------+------------------+------------------+---------------+---------------+"
 	echo -e "\n"
 }
 
@@ -53,6 +58,7 @@ evicted=0
 error=0
 crashloopbackoff=0
 imagepullbackoff=0
+podrestarts=0
 unknown=0
 
 echo -e "\nCheking the status of the pods in the namespace -> $1:\n"
