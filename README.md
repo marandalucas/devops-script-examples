@@ -2,7 +2,7 @@
 
 ## Kubernetes pod-report.sh example
 ```bash
-'./pod-report.sh customer-namespace'
+'./pod-report.sh customer-namespace forcerestart'
 
 
 Cheking the status of the pods in the namespace -> 'customer-namespace':
