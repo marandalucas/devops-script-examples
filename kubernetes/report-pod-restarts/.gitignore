@@ -1,0 +1,4 @@
+restpods-env/*
+*.csv
+restpods*
+__pycache__/
