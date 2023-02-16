@@ -118,11 +118,10 @@ class Report:
                 if pod.status.phase.lower() == 'running':
                     for container in pod.status.container_statuses:
                         if container.restart_count > 0:
-
+                            print("[DEBUG] WORKING ON => ", pod.metadata.name, "in container name -> ", container.name, "in namespace ->" , pod.metadata.namespace)
                             pods_logs = PodsLogs(auth_method='local', namespace=pod.metadata.namespace )
 
                             pods_logs_get = pods_logs.get(pod.metadata.name, container.name)
-                            # print(pods_logs_get)
 
                             container_obj = dict(
                                 pod = pod.metadata.name,
@@ -140,14 +139,19 @@ class Report:
                             container_obj['terminated_at'] = datetime.combine(terminated_date,
                                                                               terminated_time) \
                                                                               .replace(tzinfo=None)
+
                             if container.last_state.terminated:
                                 container_obj['creation_timestamp'] = pod.metadata.creation_timestamp
+                                container_obj['cluster_name'] = cluster_name
                                 container_obj['reason'] = container.last_state.terminated.reason
                                 container_obj['exit_code'] = container.last_state.terminated.exit_code
-                                container_obj['cluster_name'] = cluster_name
                                 container_obj['previous_logs'] = pods_logs_get
                             else:
+                                container_obj['creation_timestamp'] = 'N/A'
+                                container_obj['cluster_name'] = 'N/A'
                                 container_obj['reason'] = 'N/A'
+                                container_obj['exit_code'] = 'N/A'
+                                container_obj['previous_logs'] = 'N/A'
 
                             if not container.ready:
                                 not_running_containers.append(container.name)
@@ -219,10 +223,12 @@ class Report:
                                         delimiter=',',
                                         quotechar='"',
                                         quoting=csv.QUOTE_MINIMAL)
-                report_writer.writerow(['Created On', 'Cluster', 'Pod', 'Container',
+                report_writer.writerow(['Created on', 'Cluster', 'Pod', 'Container',
                                         'Namespace', 'Restart Count',
-                                        'Terminated At', 'Reason', 'Exit Code', 'Previous Logs'])
+                                        'Terminated At', 'Reason', 'Exit Code'])
                 for container_obj in self.restarting_containers_report['restarting_containers']:
+                    print("este es el namespace ", container_obj['namespace'])
+                    print("este es el pod ",container_obj['pod'])
                     report_writer.writerow([container_obj['creation_timestamp'],
                                             container_obj['cluster_name'],
                                             container_obj['pod'],
@@ -232,7 +238,7 @@ class Report:
                                             container_obj['terminated_at'],
                                             container_obj['reason'],
                                             container_obj['exit_code'],
-                                            container_obj['previous_logs']
+                                            container_obj['previous_logs'],
                                             ])
         except Exception as e:
             print('Failed to export report')
