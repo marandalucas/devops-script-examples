@@ -225,7 +225,7 @@ class Report:
                                         quoting=csv.QUOTE_MINIMAL)
                 report_writer.writerow(['Created on', 'Cluster', 'Pod', 'Container',
                                         'Namespace', 'Restart Count',
-                                        'Terminated At', 'Reason', 'Exit Code'])
+                                        'Terminated At', 'Reason', 'Exit Code', 'Previous Logs'])
                 for container_obj in self.restarting_containers_report['restarting_containers']:
                     print("este es el namespace ", container_obj['namespace'])
                     print("este es el pod ",container_obj['pod'])
